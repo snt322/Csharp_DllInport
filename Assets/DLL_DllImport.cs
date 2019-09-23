@@ -8,12 +8,13 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 
 
-/*
- * DLLを実行中リンクする
- * 
- */
-
-
+/// <summary>
+/// 動的リンク(起動時リンク)
+/// [DllImport] を使用
+/// 
+/// 実行時リンク、起動時リンクについての参考URL
+/// https://tekk.hatenadiary.org/entry/20091027/1256655409
+/// </summary>
 
 public class DLL_DllImport : MonoBehaviour
 {

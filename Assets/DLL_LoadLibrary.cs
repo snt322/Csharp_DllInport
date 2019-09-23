@@ -6,6 +6,14 @@ using System;
 using System.Runtime.InteropServices;           //DllImport属性の名前空間
 
 
+/// <summary>
+/// 動的リンク (実行時リンク)
+/// LoadLibrary()を使用
+/// 
+/// 実行時リンク、起動時リンクについての参考URL
+/// https://tekk.hatenadiary.org/entry/20091027/1256655409
+/// </summary>
+
 
 /*
  * Unity C#でDllをDllImportAttribute属性でロードするとロードしたDllはUnityEditorを終了するまでアンロードされないので以下の不都合がある
