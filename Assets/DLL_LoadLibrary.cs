@@ -151,16 +151,11 @@ public class DLL_LoadLibrary : MonoBehaviour
         int nSize, IntPtr Arguments
         );
 
-
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     delegate long MyDelegate();
-
-
-    [DllImport("MPS_CPU")]
-    private static extern int test_Add(int a, int b);
-
-    [DllImport("MPS_CPU")]
-    private static extern long loop();
 
 
 
@@ -174,6 +169,8 @@ public class DLL_LoadLibrary : MonoBehaviour
         Loop_2D_Array();
 
         Loop_2D_Array_with_MyFunc();
+
+        Loop_1D_Array_DoublePrecision_with_MyFunc(100,true, 1000000.0);
 
         StartCoroutine(Proc());
     }
@@ -378,7 +375,7 @@ public class DLL_LoadLibrary : MonoBehaviour
     /// <returns>アンロードに成功したらtrue</returns>
     private bool FreeLib(ref IntPtr hModule)
     {
-        if (hModule != IntPtr.Zero) return false;
+        if (hModule == IntPtr.Zero) return false;
         else
         {
             FreeLibrary(hModule);
@@ -428,6 +425,56 @@ public class DLL_LoadLibrary : MonoBehaviour
         }
 
 
+    }
+
+    /// <summary>
+    /// double型1次元配列のループ処理のデリゲート
+    /// </summary>
+    /// <param name="loopCount">ループ回数</param>
+    /// <param name="isDivid">true:割り算 false:掛け算</param>
+    /// <param name="value">初期値</param>
+    /// <returns>計算結果</returns>
+    delegate double MyDelegateDouble(long loopCount, bool isDivid, double value);
+    /// <summary>
+    /// double型1次元配列のループ処理を行い、処理時間をコンソールへ出力する
+    /// </summary>
+    /// <param name="loopCount">ループ回数</param>
+    /// <param name="isDivid">true:割り算 false:掛け算</param>
+    /// <param name="value">初期値</param>
+    /// <returns>計算結果</returns>
+    void Loop_1D_Array_DoublePrecision_with_MyFunc(long loopCount, bool isDivid, double value)
+    {
+        string libName = System.IO.Directory.GetCurrentDirectory() + "\\Assets";
+        libName += "\\Dll_loop_DoublePrecision.dll";
+
+        IntPtr hModule;
+        if (LoadLib(libName, out hModule))                           //ライブラリのロード
+        {
+            string lpProcName = "loop_DoublePrecision";
+            IntPtr hProcAdd;
+            if (GetProcAdd(hModule, lpProcName, out hProcAdd))       //関数のロード
+            {
+                MyDelegateDouble del = (MyDelegateDouble)System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer(hProcAdd, typeof(MyDelegateDouble));
+
+                var startTime = Time.realtimeSinceStartup;
+                var val = del(loopCount, isDivid, value);
+                var interval = Time.realtimeSinceStartup - startTime;
+
+                string oStr = string.Format("1次元double型配列のループ時間 : MyFuncを通してLoadLibraryを使用 : c++ : 結果 {0} : 経過時間 {1}sec", val, interval);
+                Debug.Log(oStr);
+            }
+            FreeLib(ref hModule);                                   //ライブラリのアンロード
+        }
+        else
+        {
+            var eMsg = Marshal.GetLastWin32Error();
+            var Msg = new System.Text.StringBuilder(255);
+            FormatMessage(0x00001000, IntPtr.Zero, (uint)eMsg, 0, Msg, Msg.Capacity, IntPtr.Zero);
+
+            string str = "Failed to LoadLibrary." + "Error(GetLastWin32Error) No." + eMsg + "  :  " + Msg.ToString();
+
+            Debug.Log(str);
+        }
     }
 
 }
